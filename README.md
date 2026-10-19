@@ -29,7 +29,6 @@ and iPad since 2013, and leading iOS teams since 2015.
 | --- | --- | --- |
 | [HMStackView](https://github.com/HelioMartin/HMStackView) | A swipeable card stack for iOS that holds view controllers instead of views. | ⭐ 28 · Objective-C |
 | [RXPiOSObjc](https://github.com/HelioMartin/RXPiOSObjc) | Objective-C helpers to add the Addon Payments HPP checkout to iOS apps. | Objective-C |
-| [Contacts-Framework](https://github.com/HelioMartin/Contacts-Framework) | A 2015 Contacts.framework patch that exposes CNContact's private `iOSLegacyIdentifier`. | Objective-C |
 
 ## 🤝 Connect
 
