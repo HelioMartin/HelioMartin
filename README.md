@@ -34,3 +34,4 @@ and iPad since 2013, and leading iOS teams since 2015.
 ## 🤝 Connect
 
 <a href="https://www.linkedin.com/in/helio-mart%C3%ADn-de-la-torre-87632980/"><img src="https://img.shields.io/badge/LinkedIn-Helio_Mart%C3%ADn-0A66C2?style=for-the-badge" alt="Helio Martín on LinkedIn"></a>
+<a href="mailto:helio.martin@icloud.com"><img src="https://img.shields.io/badge/Email-helio.martin%40icloud.com-3693F3?style=for-the-badge&logo=icloud&logoColor=white" alt="Email helio.martin@icloud.com"></a>
