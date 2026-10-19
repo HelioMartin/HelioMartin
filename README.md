@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.png">
-  <img src="assets/banner-light.png" alt="Helio Martín, iOS Engineer and Team Lead, building native iOS apps since 2013">
+  <img src="assets/banner-light.png" alt="A Swift struct named HelioMartin: name Helio Martín, role iOS Engineer · Team Lead, building native iOS apps since 2013">
 </picture>
 
 ### Hi, I'm Helio 👋

@@ -1,26 +1,58 @@
 import AppKit
 import SwiftUI
 
-// Renders the GitHub profile banner (light and dark) in KeylineKit's visual language.
+// Renders the GitHub profile banner (light and dark): the profile text written
+// as Swift code in an Xcode-style editor window.
 // Usage: DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift assets/RenderBanner.swift assets
 
-struct Palette {
-    let background: Color
-    let ink: Color
-    let slate: Color
-    let paddingFill: Color
-    let spacingFill: Color
-
-    static let light = Palette(background: .white, ink: Color(hex: 0x0F172B), slate: Color(hex: 0x62748E),
-                               paddingFill: Color(hex: 0xFFD6A7), spacingFill: Color(hex: 0xE9D4FF).opacity(0.7))
-    static let dark = Palette(background: Color(hex: 0x0D1117), ink: Color(hex: 0xF0F6FC), slate: Color(hex: 0x9198A1),
-                              paddingFill: Color(hex: 0xCA3500).opacity(0.45), spacingFill: Color(hex: 0x8200DB).opacity(0.45))
+enum Token {
+    case plain(String)
+    case keyword(String)
+    case declaration(String)
+    case type(String)
+    case string(String)
+    case number(String)
 }
 
-let blue = Color(hex: 0x1447E6)
-let orange = Color(hex: 0xCA3500)
-let green = Color(hex: 0x008236)
-let purple = Color(hex: 0x8200DB)
+/// One line of code per array: the profile as a Swift type.
+let code: [[Token]] = [
+    [.keyword("struct"), .plain(" "), .declaration("HelioMartin"), .plain(": "), .type("Developer"), .plain(" {")],
+    [.plain("    "), .keyword("let"), .plain(" "), .declaration("name"), .plain(" = "), .string("\"Helio Martín\"")],
+    [.plain("    "), .keyword("let"), .plain(" "), .declaration("role"), .plain(" = "), .string("\"iOS Engineer · Team Lead\"")],
+    [.plain("    "), .keyword("let"), .plain(" "), .declaration("building"), .plain(" = "), .string("\"Native iOS apps\"")],
+    [.plain("    "), .keyword("let"), .plain(" "), .declaration("since"), .plain(" = "), .number("2013")],
+    [.plain("}")],
+]
+
+/// Xcode's Default (Light) and Default (Dark) editor themes.
+struct Theme {
+    let page: Color
+    let editor: Color
+    let chrome: Color
+    let border: Color
+    let lineNumber: Color
+    let title: Color
+    let plain: Color
+    let keyword: Color
+    let declaration: Color
+    let type: Color
+    let string: Color
+    let number: Color
+    let caret: Color
+
+    static let light = Theme(
+        page: .white, editor: .white, chrome: Color(hex: 0xF5F5F7), border: Color(hex: 0xD8DEE4),
+        lineNumber: Color(hex: 0xA6A6A6), title: Color(hex: 0x6E6E73),
+        plain: Color(hex: 0x262626), keyword: Color(hex: 0x9B2393), declaration: Color(hex: 0x0F68A0),
+        type: Color(hex: 0x3900A0), string: Color(hex: 0xC41A16), number: Color(hex: 0x1C00CF), caret: Color(hex: 0x0F68A0)
+    )
+    static let dark = Theme(
+        page: Color(hex: 0x0D1117), editor: Color(hex: 0x1F1F24), chrome: Color(hex: 0x2A2A30), border: Color(hex: 0x3D444D),
+        lineNumber: Color(hex: 0x747478), title: Color(hex: 0x98989D),
+        plain: Color(hex: 0xDFDFE0), keyword: Color(hex: 0xFC5FA3), declaration: Color(hex: 0x5DD8FF),
+        type: Color(hex: 0xD0A8FF), string: Color(hex: 0xFC6A5D), number: Color(hex: 0xD0BF69), caret: Color(hex: 0x5DD8FF)
+    )
+}
 
 extension Color {
     init(hex: UInt32) {
@@ -28,92 +60,98 @@ extension Color {
     }
 }
 
-struct Badge: View {
-    let text: String
-    let color: Color
-    var body: some View {
-        Text(text)
-            .font(.system(size: 13, weight: .semibold, design: .monospaced))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 5)
-            .frame(height: 19)
-            .background(color, in: RoundedRectangle(cornerRadius: 3.5))
-            .fixedSize()
+let fontSize: CGFloat = 27
+
+func attributed(_ line: [Token], theme: Theme) -> AttributedString {
+    var result = AttributedString()
+    for token in line {
+        var run: AttributedString
+        switch token {
+        case .plain(let text):
+            run = AttributedString(text)
+            run.foregroundColor = theme.plain
+        case .keyword(let text):
+            run = AttributedString(text)
+            run.foregroundColor = theme.keyword
+            run.font = .system(size: fontSize, weight: .bold, design: .monospaced)
+        case .declaration(let text):
+            run = AttributedString(text)
+            run.foregroundColor = theme.declaration
+        case .type(let text):
+            run = AttributedString(text)
+            run.foregroundColor = theme.type
+        case .string(let text):
+            run = AttributedString(text)
+            run.foregroundColor = theme.string
+        case .number(let text):
+            run = AttributedString(text)
+            run.foregroundColor = theme.number
+        }
+        result += run
     }
+    return result
 }
 
-/// The avatar with an orange padding band and a measured edge, the way
-/// `.padding(16)` around an `Image` looks under `#Keyline`.
-struct Avatar: View {
-    let image: NSImage
-    let palette: Palette
+struct EditorWindow: View {
+    let theme: Theme
     var body: some View {
-        let padding: CGFloat = 16
-        Image(nsImage: image)
-            .resizable()
-            .frame(width: 176, height: 176)
-            .clipShape(Circle())
-            .overlay { Circle().stroke(green, lineWidth: 2) }
-            .padding(padding)
-            .background { Rectangle().fill(palette.paddingFill) }
-            .overlay { Rectangle().stroke(blue, lineWidth: 1.5) }
-            .overlay(alignment: .topLeading) { Badge(text: "Image", color: blue).offset(y: -21) }
-            .overlay(alignment: .top) {
-                // Dimension line across the top band, with end ticks and its value.
-                ZStack {
-                    Path { path in
-                        path.move(to: CGPoint(x: 9, y: 1)); path.addLine(to: CGPoint(x: 9, y: padding - 1))
-                        path.move(to: CGPoint(x: 4, y: 1)); path.addLine(to: CGPoint(x: 14, y: 1))
-                        path.move(to: CGPoint(x: 4, y: padding - 1)); path.addLine(to: CGPoint(x: 14, y: padding - 1))
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                ForEach([0xFF5F57, 0xFEBC2E, 0x28C840], id: \.self) { hex in
+                    Circle().fill(Color(hex: UInt32(hex))).frame(width: 13, height: 13)
+                }
+                Spacer()
+            }
+            .overlay {
+                Text("HelioMartin.swift")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(theme.title)
+            }
+            .padding(.horizontal, 16)
+            .frame(height: 42)
+            .background(theme.chrome)
+            .overlay(alignment: .bottom) { Rectangle().fill(theme.border).frame(height: 1) }
+
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(code.enumerated()), id: \.offset) { index, line in
+                    HStack(alignment: .firstTextBaseline, spacing: 24) {
+                        Text("\(index + 1)")
+                            .foregroundStyle(theme.lineNumber)
+                            .frame(width: 22, alignment: .trailing)
+                        HStack(spacing: 2) {
+                            Text(attributed(line, theme: theme))
+                            if index == code.count - 2 {
+                                Rectangle().fill(theme.caret).frame(width: 3, height: fontSize + 4)
+                            }
+                        }
                     }
-                    .stroke(orange, lineWidth: 1.5)
-                    .frame(width: 18, height: padding)
-                    Badge(text: "16", color: orange).offset(x: 26)
                 }
             }
+            .font(.system(size: fontSize, weight: .regular, design: .monospaced))
+            .padding(.vertical, 26)
+            .padding(.leading, 20)
+            .padding(.trailing, 48)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(theme.editor)
+        }
+        .fixedSize()
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay { RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(theme.border, lineWidth: 1) }
     }
 }
 
 struct Banner: View {
-    let palette: Palette
-    let avatar: NSImage
+    let theme: Theme
     var body: some View {
-        HStack(alignment: .center, spacing: 56) {
-            Avatar(image: avatar, palette: palette)
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Helio Martín")
-                    .font(.system(size: 72, weight: .bold))
-                    .tracking(-1.2)
-                    .foregroundStyle(palette.ink)
-                    .padding(.horizontal, 2)
-                    .overlay { Rectangle().stroke(blue, lineWidth: 1.5) }
-                    .overlay(alignment: .topLeading) { Badge(text: "Text", color: blue).offset(y: -21) }
-                    .overlay(alignment: .bottom) {
-                        ZStack {
-                            Rectangle().fill(palette.spacingFill)
-                            Badge(text: "16", color: purple)
-                        }
-                        .frame(height: 16)
-                        .offset(y: 16)
-                    }
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("iOS Engineer · Team Lead")
-                        .font(.system(size: 30, weight: .semibold))
-                        .foregroundStyle(palette.ink)
-                    Text("Building native iOS apps since 2013")
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundStyle(palette.slate)
-                }
-            }
-        }
-        .frame(width: 1200, height: 400)
-        .background(palette.background)
+        EditorWindow(theme: theme)
+            .frame(width: 1200, height: 420)
+            .background(theme.page)
     }
 }
 
 @MainActor
-func render(_ palette: Palette, avatar: NSImage, to url: URL) throws {
-    let renderer = ImageRenderer(content: Banner(palette: palette, avatar: avatar))
+func render(_ theme: Theme, to url: URL) throws {
+    let renderer = ImageRenderer(content: Banner(theme: theme))
     renderer.scale = 2
     guard let image = renderer.cgImage else { throw CocoaError(.fileWriteUnknown) }
     try NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])?.write(to: url)
@@ -121,10 +159,7 @@ func render(_ palette: Palette, avatar: NSImage, to url: URL) throws {
 }
 
 let output = URL(fileURLWithPath: CommandLine.arguments[1])
-guard let avatar = NSImage(contentsOf: output.appendingPathComponent("avatar.png")) else {
-    fatalError("Missing assets/avatar.png")
-}
 try MainActor.assumeIsolated {
-    try render(.light, avatar: avatar, to: output.appendingPathComponent("banner-light.png"))
-    try render(.dark, avatar: avatar, to: output.appendingPathComponent("banner-dark.png"))
+    try render(.light, to: output.appendingPathComponent("banner-light.png"))
+    try render(.dark, to: output.appendingPathComponent("banner-dark.png"))
 }
