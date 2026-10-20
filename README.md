@@ -27,8 +27,8 @@ and iPad since 2013, and leading iOS teams since 2015.
 | Project | What it does | |
 | --- | --- | --- |
 | [KeylineKit](https://github.com/HelioMartin/KeylineKit) | Measured layout annotations for SwiftUI previews: padding, spacing, sizes, corner radii and safe area. | Swift |
-| [HMStackView](https://github.com/HelioMartin/HMStackView) | A swipeable card stack for iOS that holds view controllers instead of views. | Objective-C |
-| [RXPiOSObjc](https://github.com/HelioMartin/RXPiOSObjc) | Objective-C helpers to add the Addon Payments HPP checkout to iOS apps. | Objective-C |
+| [HMStackView](https://github.com/HelioMartin/HMStackView) | A swipeable card stack for iOS that holds view controllers instead of views. | Objective&#8209;C |
+| [RXPiOSObjc](https://github.com/HelioMartin/RXPiOSObjc) | Objective-C helpers to add the Addon Payments HPP checkout to iOS apps. | Objective&#8209;C |
 
 ## 🤝 Connect
 
