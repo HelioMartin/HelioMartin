@@ -1,8 +1,8 @@
 import AppKit
 import SwiftUI
 
-// Renders the GitHub profile banner (light and dark): the profile text written
-// as Swift code in an Xcode-style editor window.
+// Renders the GitHub profile banner and the LinkedIn background (light and dark):
+// the profile text written as Swift code in an Xcode-style editor window.
 // Usage: DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift assets/RenderBanner.swift assets
 
 enum Token {
@@ -149,9 +149,22 @@ struct Banner: View {
     }
 }
 
+/// LinkedIn's 1584 × 396 background. The photo covers the lower left, so the
+/// editor is scaled down and sits a little right of center.
+struct LinkedInBanner: View {
+    let theme: Theme
+    var body: some View {
+        EditorWindow(theme: theme)
+            .scaleEffect(0.8)
+            .offset(x: 80)
+            .frame(width: 1584, height: 396)
+            .background(theme.page)
+    }
+}
+
 @MainActor
-func render(_ theme: Theme, to url: URL) throws {
-    let renderer = ImageRenderer(content: Banner(theme: theme))
+func render(_ view: some View, to url: URL) throws {
+    let renderer = ImageRenderer(content: view)
     renderer.scale = 2
     guard let image = renderer.cgImage else { throw CocoaError(.fileWriteUnknown) }
     try NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])?.write(to: url)
@@ -160,6 +173,8 @@ func render(_ theme: Theme, to url: URL) throws {
 
 let output = URL(fileURLWithPath: CommandLine.arguments[1])
 try MainActor.assumeIsolated {
-    try render(.light, to: output.appendingPathComponent("banner-light.png"))
-    try render(.dark, to: output.appendingPathComponent("banner-dark.png"))
+    try render(Banner(theme: .light), to: output.appendingPathComponent("banner-light.png"))
+    try render(Banner(theme: .dark), to: output.appendingPathComponent("banner-dark.png"))
+    try render(LinkedInBanner(theme: .light), to: output.appendingPathComponent("linkedin-banner-light.png"))
+    try render(LinkedInBanner(theme: .dark), to: output.appendingPathComponent("linkedin-banner-dark.png"))
 }
